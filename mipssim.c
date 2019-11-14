@@ -63,7 +63,23 @@ void FSM()
             control->ALUOp = 0;
             if (IR_meta->type == R_TYPE) state = EXEC;
             else if (opcode == EOP) state = EXIT_STATE;
+            else if (opcode == LW || opcode == SW) state = MEM_ADDR_COMP;
+            else if (opcode == BEQ) state = BRANCH_COMPL;
+            else if (opcode == J) state = JUMP_COMPL;
             else assert(false);
+            break;
+        case JUMP_COMPL:
+            control->PCWrite = 1;
+            control->PCSource = 2;
+            state = INSTR_FETCH;
+            break;
+        case BRANCH_COMPL:
+            control->ALUSrcA = 1;
+            control->ALUSrcB = 0;
+            control->ALUOp = 1;
+            control->PCWriteCond = 1;
+            control->PCSource = 1;
+            state = INSTR_FETCH;
             break;
         case EXEC:
             control->ALUSrcA = 1;
@@ -75,6 +91,30 @@ void FSM()
             control->RegDst = 1;
             control->RegWrite = 1;
             control->MemtoReg = 0;
+            state = INSTR_FETCH;
+            break;
+        case MEM_ADDR_COMP:
+        	control->ALUSrcA = 1;
+        	control->ALUSrcB = 2;
+            control->ALUOp = 0;
+            if (opcode == LW) state = MEM_ACCESS_LD;
+            else if (opcode == SW) state = MEM_ACCESS_ST;
+            else assert(false);
+            break;
+        case MEM_ACCESS_LD:
+        	control->MemRead = 1;
+        	control->IorD = 1;
+        	state = WB_STEP;
+        	break;
+        case WB_STEP:
+            control->RegDst = 0;
+            control->RegWrite = 1;
+            control->MemtoReg = 1;
+            state = INSTR_FETCH;
+            break;
+        case MEM_ACCESS_ST:
+            control->MemWrite = 1;
+            control->IorD = 1;
             state = INSTR_FETCH;
             break;
         default: assert(false);
