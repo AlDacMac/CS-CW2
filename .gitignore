@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# Eclipse project files
+.buildpath
+.settings/org.eclipse.cdt.core.prefs
+
 # Object files
 *.o
 *.ko
