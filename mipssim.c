@@ -13,6 +13,14 @@
 char mem_init_path[1000];
 char reg_init_path[1000];
 
+////////////////////////////////////////////////////////
+/// Student's Helper Defines & Functions
+////////////////////////////////////////////////////////
+
+//Student added instruction types
+#define I_TYPE 2
+#define J_TYPE 3
+
 uint32_t cache_size = 0;
 struct architectural_state arch_state;
 
@@ -25,6 +33,11 @@ static inline uint8_t get_instruction_type(int opcode)
             return R_TYPE;
         case EOP:
             return EOP_TYPE;
+        case ADD:
+            return R_TYPE;
+        case ADDI:
+            return I_TYPE;
+
 
         ///@students: fill in the rest
 
@@ -66,13 +79,31 @@ void FSM()
             else if (opcode == LW || opcode == SW) state = MEM_ADDR_COMP;
             else if (opcode == BEQ) state = BRANCH_COMPL;
             else if (opcode == J) state = JUMP_COMPL;
+            else if (opcode == ADDI) state = I_TYPE_EXEC;
             else assert(false);
             break;
+        //ADDI chain start
+        case I_TYPE_EXEC:
+            control->ALUSrcA = 1;
+            control->ALUSrcB = 2;
+            control->ALUOp = 0;
+            state = I_TYPE_COMPL;
+            break;
+        case I_TYPE_COMPL:
+            control->RegDst = 0;
+            control->RegWrite = 1;
+            control->MemtoReg = 0;
+            state = INSTR_FETCH;
+            break;
+        //ADDI end
+        //J chain start
         case JUMP_COMPL:
             control->PCWrite = 1;
             control->PCSource = 2;
             state = INSTR_FETCH;
             break;
+        //J end
+        //BEQ chain start
         case BRANCH_COMPL:
             control->ALUSrcA = 1;
             control->ALUSrcB = 0;
@@ -81,6 +112,8 @@ void FSM()
             control->PCSource = 1;
             state = INSTR_FETCH;
             break;
+        //BEQ end
+        //R_TYPE chain start
         case EXEC:
             control->ALUSrcA = 1;
             control->ALUSrcB = 0;
@@ -93,6 +126,8 @@ void FSM()
             control->MemtoReg = 0;
             state = INSTR_FETCH;
             break;
+        //R_TYPE end
+        //LW and SW chain start
         case MEM_ADDR_COMP:
         	control->ALUSrcA = 1;
         	control->ALUSrcB = 2;
@@ -101,6 +136,7 @@ void FSM()
             else if (opcode == SW) state = MEM_ACCESS_ST;
             else assert(false);
             break;
+        //LW section
         case MEM_ACCESS_LD:
         	control->MemRead = 1;
         	control->IorD = 1;
@@ -112,11 +148,14 @@ void FSM()
             control->MemtoReg = 1;
             state = INSTR_FETCH;
             break;
+        //LW end
+        //SW section
         case MEM_ACCESS_ST:
             control->MemWrite = 1;
             control->IorD = 1;
             state = INSTR_FETCH;
             break;
+        //SW end
         default: assert(false);
     }
     arch_state.state = state;
