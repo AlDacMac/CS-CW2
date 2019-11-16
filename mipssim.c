@@ -40,7 +40,8 @@ static inline uint8_t get_instruction_type(int opcode)
         case LW:
         case SW:
             return I_TYPE;
-
+        case J:
+            return J_TYPE;
         default:
             assert(false);
     }
