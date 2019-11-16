@@ -30,16 +30,16 @@ static inline uint8_t get_instruction_type(int opcode)
         /// opcodes are defined in mipssim.h
 
         case SPECIAL:
+        case SLT:
+        case ADD:
             return R_TYPE;
         case EOP:
             return EOP_TYPE;
-        case ADD:
-            return R_TYPE;
         case ADDI:
+        case BEQ:
+        case LW:
+        case SW:
             return I_TYPE;
-
-
-        ///@students: fill in the rest
 
         default:
             assert(false);
@@ -83,6 +83,9 @@ void FSM()
             else assert(false);
             break;
         //ADDI chain start
+            // TODO: Note to self: this is the exact same as the first
+            //  step of the  stores, and I could actually just go from there
+            //   - might be worth testing later
         case I_TYPE_EXEC:
             control->ALUSrcA = 1;
             control->ALUSrcB = 2;
