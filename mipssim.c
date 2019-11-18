@@ -84,9 +84,9 @@ void FSM()
             else assert(false);
             break;
         //ADDI chain start
-            // TODO: Note to self: this is the exact same as the first
-            //  step of the  stores, and I could actually just go from there
-            //   - might be worth testing later
+            // Note to self: I have just gone through MEM_ADDR_COMP instead, as
+            // they use the exact same control outputs, and this lets us model the
+            // actual processor better (maybe)
         case I_TYPE_EXEC:
             control->ALUSrcA = 1;
             control->ALUSrcB = 2;
