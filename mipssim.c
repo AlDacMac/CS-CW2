@@ -77,10 +77,10 @@ void FSM()
             control->ALUOp = 0;
             if (IR_meta->type == R_TYPE) state = EXEC;
             else if (opcode == EOP) state = EXIT_STATE;
-            else if (opcode == LW || opcode == SW) state = MEM_ADDR_COMP;
+            else if (opcode == LW || opcode == SW || opcode == ADDI) state = MEM_ADDR_COMP;
             else if (opcode == BEQ) state = BRANCH_COMPL;
             else if (opcode == J) state = JUMP_COMPL;
-            else if (opcode == ADDI) state = I_TYPE_EXEC;
+            //else if (opcode == ADDI) state = I_TYPE_EXEC;
             else assert(false);
             break;
         //ADDI chain start
@@ -138,6 +138,7 @@ void FSM()
             control->ALUOp = 0;
             if (opcode == LW) state = MEM_ACCESS_LD;
             else if (opcode == SW) state = MEM_ACCESS_ST;
+            else if (opcode == ADDI) state = I_TYPE_COMPL;
             else assert(false);
             break;
         //LW section
@@ -202,6 +203,9 @@ void execute()
         case 1:
             alu_opB = WORD_SIZE;
             break;
+        case 2:
+            alu_opB = immediate;
+            break;
         case 3:
             alu_opB = shifted_immediate;
             break;
@@ -242,7 +246,7 @@ void memory_access() {
 void write_back()
 {
     if (arch_state.control.RegWrite) {
-        int write_reg_id =  arch_state.IR_meta.reg_11_15;
+        int write_reg_id =  arch_state.control.RegDst == 1 ? arch_state.IR_meta.reg_11_15 : arch_state.IR_meta.reg_16_20;
         check_is_valid_reg_id(write_reg_id);
         int write_data =  arch_state.curr_pipe_regs.ALUOut;
         if (write_reg_id > 0) {
@@ -270,6 +274,10 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
                 printf("Executing ADD(%d), $%u = $%u + $%u (function: %u) \n",
                        IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
             else assert(false);
+            break;
+        case ADDI:
+            printf("Executing ADDI, $%u = $%u + %u \n"
+                    , IR_meta->reg_16_20, IR_meta->reg_21_25, IR_meta->immediate);
             break;
         case EOP:
             printf("Executing EOP(%d) \n", IR_meta->opcode);
