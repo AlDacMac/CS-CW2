@@ -169,7 +169,8 @@ void FSM()
 
 void instruction_fetch()
 {
-    if (arch_state.control.MemRead) {
+    // The bit about IorD was added by me, I'm pretty sure it's supposed to be here.
+    if (arch_state.control.MemRead && !(arch_state.control.IorD)) {
         int address = arch_state.curr_pipe_regs.pc;
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
@@ -241,14 +242,21 @@ void execute()
 
 void memory_access() {
   ///@students: appropriate calls to functions defined in memory_hierarchy.c must be added
+    if (arch_state.control.MemRead && arch_state.control.IorD){
+        arch_state.next_pipe_regs.MDR = memory_read(arch_state.curr_pipe_regs.ALUOut);
+    }
 }
 
 void write_back()
 {
+    struct ctrl_signals *control = &arch_state.control;
+    struct instr_meta *IR_meta = &arch_state.IR_meta;
+    struct pipe_regs *curr_pipe_regs = &arch_state.curr_pipe_regs;
+    struct pipe_regs *next_pipe_regs = &arch_state.next_pipe_regs;
     if (arch_state.control.RegWrite) {
-        int write_reg_id =  arch_state.control.RegDst == 1 ? arch_state.IR_meta.reg_11_15 : arch_state.IR_meta.reg_16_20;
+        int write_reg_id =  control->RegDst == 1 ? IR_meta->reg_11_15 : IR_meta->reg_16_20;
         check_is_valid_reg_id(write_reg_id);
-        int write_data =  arch_state.curr_pipe_regs.ALUOut;
+        int write_data = control->MemtoReg == 0 ? curr_pipe_regs->ALUOut : curr_pipe_regs->MDR;
         if (write_reg_id > 0) {
             arch_state.registers[write_reg_id] = write_data;
             //printf("Reg $%u = %d \n", write_reg_id, write_data);
@@ -301,6 +309,7 @@ void assign_pipeline_registers_for_the_next_cycle()
     curr_pipe_regs->ALUOut = next_pipe_regs->ALUOut;
     curr_pipe_regs->A = next_pipe_regs->A;
     curr_pipe_regs->B = next_pipe_regs->B;
+    curr_pipe_regs->MDR = next_pipe_regs->MDR;
     if (control->PCWrite) {
         check_address_is_word_aligned(next_pipe_regs->pc);
         curr_pipe_regs->pc = next_pipe_regs->pc;
