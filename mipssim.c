@@ -172,6 +172,8 @@ void instruction_fetch()
     // The bit about IorD was added by me, I'm pretty sure it's supposed to be here.
     if (arch_state.control.MemRead && !(arch_state.control.IorD)) {
         int address = arch_state.curr_pipe_regs.pc;
+        printf("test print address %d\n"
+                , address);
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
 }
@@ -192,6 +194,7 @@ void execute()
     struct instr_meta *IR_meta = &arch_state.IR_meta;
     struct pipe_regs *curr_pipe_regs = &arch_state.curr_pipe_regs;
     struct pipe_regs *next_pipe_regs = &arch_state.next_pipe_regs;
+    int zeroBit = 0;
 
     int alu_opA = control->ALUSrcA == 1 ? curr_pipe_regs->A : curr_pipe_regs->pc;
     int alu_opB = 0;
@@ -219,6 +222,12 @@ void execute()
         case 0:
             next_pipe_regs->ALUOut = alu_opA + alu_opB;
             break;
+        case 1:
+            if(alu_opA == alu_opB){
+                zeroBit = 1;
+                printf("zero bit was set to 1 as alu inputs are equal \n");
+            }
+            break;
         case 2:
             if (IR_meta->function == ADD)
                 next_pipe_regs->ALUOut = alu_opA + alu_opB;
@@ -230,11 +239,20 @@ void execute()
     }
 
     // PC calculation
-    int firstFour = get_piece_of_a_word(arch_state.curr_pipe_regs.pc, 28, 4);
-    int shiftedOffset = arch_state.IR_meta.jmp_offset << 2;
+    int firstFour = get_piece_of_a_word(curr_pipe_regs->pc, 28, 4);
+    int shiftedOffset = IR_meta->jmp_offset << 2;
     switch (control->PCSource) {
         case 0:
             next_pipe_regs->pc = next_pipe_regs->ALUOut;
+            break;
+        case 1:
+            // Branching
+            if (zeroBit && control->PCWriteCond){
+                    control->PCWrite = 1;
+                    printf("setting pc in next pipes to %d\n"
+                            , curr_pipe_regs->ALUOut);
+                    next_pipe_regs->pc = curr_pipe_regs->ALUOut;
+                }
             break;
         case 2:
             next_pipe_regs->pc = shiftedOffset + firstFour;
@@ -242,6 +260,9 @@ void execute()
         default:
             assert(false);
     }
+
+
+
 }
 
 
@@ -312,8 +333,12 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
             printf("Executing EOP(%d) \n", IR_meta->opcode);
             break;
         case J:
-            printf("Executing J, jump offset is %d"
+            printf("Executing J, jump offset is %d\n"
                     , IR_meta->jmp_offset);
+            break;
+        case BEQ:
+            printf("Executing BEQ, if (%d == %d) branch by %d\n"
+                    , IR_meta->reg_21_25, IR_meta->reg_16_20, IR_meta->immediate);
             break;
         default: assert(false);
     }
