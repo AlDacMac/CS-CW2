@@ -259,6 +259,9 @@ void write_back()
         int write_data = control->MemtoReg == 0 ? curr_pipe_regs->ALUOut : curr_pipe_regs->MDR;
         if (write_reg_id > 0) {
             arch_state.registers[write_reg_id] = write_data;
+            //TODO: Remove this tester at the end
+            printf("after doing this write, register %d is set to %d\n"
+                    , write_reg_id, arch_state.registers[write_reg_id]);
             //printf("Reg $%u = %d \n", write_reg_id, write_data);
         } else printf("Attempting to write reg_0. That is likely a mistake \n");
     }
@@ -286,6 +289,10 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
         case ADDI:
             printf("Executing ADDI, $%u = $%u + %u \n"
                     , IR_meta->reg_16_20, IR_meta->reg_21_25, IR_meta->immediate);
+            break;
+        case LW:
+            printf("Executing LW, $%u = %u($%u) \n"
+                    , IR_meta->reg_16_20, IR_meta->immediate, IR_meta->reg_21_25);
             break;
         case EOP:
             printf("Executing EOP(%d) \n", IR_meta->opcode);
