@@ -230,9 +230,14 @@ void execute()
     }
 
     // PC calculation
+    int firstFour = get_piece_of_a_word(arch_state.curr_pipe_regs.pc, 28, 4);
+    int shiftedOffset = arch_state.IR_meta.jmp_offset << 2;
     switch (control->PCSource) {
         case 0:
             next_pipe_regs->pc = next_pipe_regs->ALUOut;
+            break;
+        case 2:
+            next_pipe_regs->pc = shiftedOffset + firstFour;
             break;
         default:
             assert(false);
@@ -244,6 +249,11 @@ void memory_access() {
   ///@students: appropriate calls to functions defined in memory_hierarchy.c must be added
     if (arch_state.control.MemRead && arch_state.control.IorD){
         arch_state.next_pipe_regs.MDR = memory_read(arch_state.curr_pipe_regs.ALUOut);
+    }
+    if (arch_state.control.MemWrite && arch_state.control.IorD){
+        memory_write(arch_state.curr_pipe_regs.ALUOut, arch_state.curr_pipe_regs.B);
+        printf("Wrote %d into memory address %d \n",
+                arch_state.curr_pipe_regs.B, arch_state.curr_pipe_regs.ALUOut);
     }
 }
 
@@ -294,8 +304,16 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
             printf("Executing LW, $%u = %u($%u) \n"
                     , IR_meta->reg_16_20, IR_meta->immediate, IR_meta->reg_21_25);
             break;
+        case SW:
+            printf("Executing SW, $%u = %u($%u) \n"
+                    , IR_meta->reg_16_20, IR_meta->immediate, IR_meta->reg_21_25);
+            break;
         case EOP:
             printf("Executing EOP(%d) \n", IR_meta->opcode);
+            break;
+        case J:
+            printf("Executing J, jump offset is %d"
+                    , IR_meta->jmp_offset);
             break;
         default: assert(false);
     }
