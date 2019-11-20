@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# C built filea
+*.exe
+mipssim
+
 # Eclipse project files
 .buildpath
 .settings/org.eclipse.cdt.core.prefs
