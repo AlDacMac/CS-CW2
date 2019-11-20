@@ -225,6 +225,7 @@ void execute()
         case 1:
             if(alu_opA == alu_opB){
                 zeroBit = 1;
+                // TODO Remove test printer
                 printf("zero bit was set to 1 as alu inputs are equal \n");
             }
             break;
@@ -249,6 +250,7 @@ void execute()
             // Branching
             if (zeroBit && control->PCWriteCond){
                     control->PCWrite = 1;
+                    // TODO Remove this test print
                     printf("setting pc in next pipes to %d\n"
                             , curr_pipe_regs->ALUOut);
                     next_pipe_regs->pc = curr_pipe_regs->ALUOut;
