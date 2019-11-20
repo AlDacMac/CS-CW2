@@ -172,8 +172,10 @@ void instruction_fetch()
     // The bit about IorD was added by me, I'm pretty sure it's supposed to be here.
     if (arch_state.control.MemRead && !(arch_state.control.IorD)) {
         int address = arch_state.curr_pipe_regs.pc;
-        printf("test print address %d\n"
+        // TODO remove test print at end
+        /*printf("test print address %d\n"
                 , address);
+                */
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
 }
@@ -226,7 +228,9 @@ void execute()
             if(alu_opA == alu_opB){
                 zeroBit = 1;
                 // TODO Remove test printer
-                printf("zero bit was set to 1 as alu inputs are equal \n");
+               /*printf("zero bit was set to 1 as alu inputs are equal \n");
+                *
+                */
             }
             break;
         case 2:
@@ -255,8 +259,9 @@ void execute()
             if (zeroBit && control->PCWriteCond){
                     control->PCWrite = 1;
                     // TODO Remove this test print
-                    printf("setting pc in next pipes to %d\n"
+                    /*printf("setting pc in next pipes to %d\n"
                             , curr_pipe_regs->ALUOut);
+                            */
                     next_pipe_regs->pc = curr_pipe_regs->ALUOut;
                 }
             break;
@@ -279,8 +284,11 @@ void memory_access() {
     }
     if (arch_state.control.MemWrite && arch_state.control.IorD){
         memory_write(arch_state.curr_pipe_regs.ALUOut, arch_state.curr_pipe_regs.B);
+        //TODO remove test print
+        /*
         printf("Wrote %d into memory address %d \n",
                 arch_state.curr_pipe_regs.B, arch_state.curr_pipe_regs.ALUOut);
+                */
     }
 }
 
@@ -297,8 +305,9 @@ void write_back()
         if (write_reg_id > 0) {
             arch_state.registers[write_reg_id] = write_data;
             //TODO: Remove this tester at the end
-            printf("after doing this write, register %d is set to %d\n"
+            /*printf("after doing this write, register %d is set to %d\n"
                     , write_reg_id, arch_state.registers[write_reg_id]);
+                    */
             //printf("Reg $%u = %d \n", write_reg_id, write_data);
         } else printf("Attempting to write reg_0. That is likely a mistake \n");
     }
@@ -348,7 +357,7 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
                     , IR_meta->jmp_offset);
             break;
         case BEQ:
-            printf("Executing BEQ, if (%d == %d) branch by %d\n"
+            printf("Executing BEQ, if ($%d == $%d) branch by %d\n"
                     , IR_meta->reg_21_25, IR_meta->reg_16_20, IR_meta->immediate);
             break;
         case SLT:
