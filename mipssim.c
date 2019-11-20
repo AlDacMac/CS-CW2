@@ -230,8 +230,12 @@ void execute()
             }
             break;
         case 2:
-            if (IR_meta->function == ADD)
+            if (IR_meta->function == ADD){
                 next_pipe_regs->ALUOut = alu_opA + alu_opB;
+            }
+            else if(IR_meta->function == SLT){
+                next_pipe_regs->ALUOut = (alu_opA < alu_opB);
+            }
             else
                 assert(false);
             break;
@@ -314,9 +318,14 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
 
     switch (IR_meta->opcode) {
         case SPECIAL:
-            if (IR_meta->function == ADD)
+            if (IR_meta->function == ADD){
                 printf("Executing ADD(%d), $%u = $%u + $%u (function: %u) \n",
                        IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            }
+            else if(IR_meta->function == SLT){
+                printf("Executing SLT, $%d = ($%d < $%d)\n"
+                        , IR_meta->reg_11_15, IR_meta->reg_21_25, IR_meta->reg_16_20);
+            }
             else assert(false);
             break;
         case ADDI:
@@ -341,6 +350,10 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
         case BEQ:
             printf("Executing BEQ, if (%d == %d) branch by %d\n"
                     , IR_meta->reg_21_25, IR_meta->reg_16_20, IR_meta->immediate);
+            break;
+        case SLT:
+            printf("Executing SLT, $%d = ($%d < $%d)\n"
+                    , IR_meta->reg_11_15, IR_meta->reg_21_25, IR_meta->reg_16_20);
             break;
         default: assert(false);
     }
