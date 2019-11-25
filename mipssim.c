@@ -176,6 +176,7 @@ void instruction_fetch()
         /*printf("test print address %d\n"
                 , address);
                 */
+        printf("-------------------\n");
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
 }
@@ -419,7 +420,6 @@ int main(int argc, const char* argv[])
 
         assign_pipeline_registers_for_the_next_cycle();
 
-
        ///@students WARNING: Do NOT change/move/remove code below this point!
         marking_after_clock_cycle();
         arch_state.clock_cycle++;
@@ -434,5 +434,9 @@ int main(int argc, const char* argv[])
         }
     }
     marking_at_the_end();
+    printf("%d\n", (int) arch_state.mem_stats.lw_cache_hits);
+    printf("%d\n", (int) arch_state.mem_stats.lw_total);
+    printf("%d\n", (int) arch_state.mem_stats.sw_cache_hits);
+    printf("%d\n", (int) arch_state.mem_stats.sw_total);
 }
 

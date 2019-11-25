@@ -87,14 +87,17 @@ int memory_read(int address){
         int tag = get_piece_of_a_word(address, (uint8_t) offsetBits + indexBits,
                 (uint8_t) (32 - indexBits - offsetBits));
         int blockStart = (address - offset);
+        printf("Executing cache load with idx: %d, offset %d, tag %d: ", idx, offset, tag);
         cacheLine *line = cache[idx];
         // If hit return data
         if(line->tag == tag && line->valid){
+            printf("hi\n");
             arch_state.mem_stats.lw_cache_hits++;
             return (int) line->data[offset / 4];
         }
         // Else load data into the cache, then return it
         else{
+            printf("miss\n");
             for(int i = 0; i < 4; i++){
                 int loadingOffset = 4 * i;
                 int loadingAddress = blockStart + loadingOffset;
