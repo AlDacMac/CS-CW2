@@ -57,9 +57,7 @@ void memory_state_init(struct architectural_state* arch_state_ptr) {
     }else {
         // CACHE ENABLED
         noLines = cache_size / 16;
-        printf("noLines = %d\n", noLines);
         indexBits = ceil(log2(noLines));
-        printf("indexBits = %d\n", indexBits);
         cache = (cacheLine**) malloc(sizeof(cacheLine*) * noLines);
         for(int i = 0; i < noLines; i++){
             cache[i] = malloc(sizeof(cacheLine));
@@ -82,28 +80,21 @@ int memory_read(int address){
         // CACHE DISABLED
         return (int) arch_state.memory[address / 4];
     }else{
-        printf("entered cache load: ");
         // CACHE ENABLED
         int offset = get_piece_of_a_word(address, 0, offsetBits);
-        printf("offset = %d, ", offset);
         int idx = get_piece_of_a_word(address, (uint8_t) offsetBits
                 , (uint8_t) indexBits);
-        printf("idx = %d, ", idx);
         int tag = get_piece_of_a_word(address, (uint8_t) offsetBits + indexBits,
                 (uint8_t) (32 - indexBits - offsetBits));
-        printf("tag = %d, ", tag);
         int blockStart = (address - offset);
-        printf("blockStart = %d\n", blockStart);
         cacheLine *line = cache[idx];
         // If hit return data
         if(line->tag == tag && line->valid){
-            printf("    - got a hit\n");
             arch_state.mem_stats.lw_cache_hits++;
             return (int) line->data[offset / 4];
         }
         // Else load data into the cache, then return it
         else{
-            printf("    - got a miss\n");
             for(int i = 0; i < 4; i++){
                 int loadingOffset = 4 * i;
                 int loadingAddress = blockStart + loadingOffset;

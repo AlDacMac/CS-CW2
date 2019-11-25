@@ -173,7 +173,7 @@ static inline void check_address_is_word_aligned(int address)
 {
     assert(address >= 0);
     assert(address % WORD_SIZE == 0);
-    assert(address <= MEMORY_WORD_NUM);
+    assert(address <= MEMORY_WORD_NUM * WORD_SIZE);
 }
 
 
