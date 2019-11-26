@@ -91,7 +91,7 @@ int memory_read(int address){
         cacheLine *line = cache[idx];
         // If hit return data
         if(line->tag == tag && line->valid){
-            printf("hi\n");
+            printf("hit\n");
             arch_state.mem_stats.lw_cache_hits++;
             return (int) line->data[offset / 4];
         }
