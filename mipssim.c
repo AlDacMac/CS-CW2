@@ -77,10 +77,10 @@ void FSM()
             control->ALUOp = 0;
             if (IR_meta->type == R_TYPE) state = EXEC;
             else if (opcode == EOP) state = EXIT_STATE;
-            else if (opcode == LW || opcode == SW || opcode == ADDI) state = MEM_ADDR_COMP;
+            else if (opcode == LW || opcode == SW) state = MEM_ADDR_COMP;
             else if (opcode == BEQ) state = BRANCH_COMPL;
             else if (opcode == J) state = JUMP_COMPL;
-            //else if (opcode == ADDI) state = I_TYPE_EXEC;
+            else if (opcode == ADDI) state = I_TYPE_EXEC;
             else assert(false);
             break;
         //ADDI chain start
@@ -138,7 +138,6 @@ void FSM()
             control->ALUOp = 0;
             if (opcode == LW) state = MEM_ACCESS_LD;
             else if (opcode == SW) state = MEM_ACCESS_ST;
-            else if (opcode == ADDI) state = I_TYPE_COMPL;
             else assert(false);
             break;
         //LW section
